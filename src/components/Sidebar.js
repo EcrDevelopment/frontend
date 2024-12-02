@@ -1,7 +1,7 @@
 // src/components/Sidebar.js
 import React from "react";
 import { Link } from "react-router-dom";
-import { Menu, Layout,Avatar } from "antd";
+import { Menu, Layout, Avatar } from "antd";
 import {
   // DesktopOutlined,
   UserOutlined,
@@ -39,18 +39,16 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
         top: 0,
         bottom: 0,
       }}
-    >    
-      <div className="px-2 py-6 m-auto w-full block inline-block space-x-4">
-        <Avatar src={"/Logo_Semilla.png"} size={60} shape="square"/> 
-        <div className="flex flex-row justify-center">
-          <span className="text-2xl text-white mt-4">
-            360°
-          </span>
-        </div>        
-      </div>      
-     
+    >
+      <div className="flex items-center px-2 py-6 m-auto w-full space-x-4">
+        <Avatar src={"/Logo_Semilla.png"} size={60} shape="square" />        
+          <div className={`flex items-center ${collapsed ? 'hidden' : 'block'}`}>
+            <span className="text-5xl text-white font-extrabold text-[#F6AF33]">360°</span>
+          </div>        
+      </div>
+
       <Menu theme="dark" defaultSelectedKeys={["1"]} mode="inline" items={items}>
-        
+
       </Menu>
     </Sider>
   );
