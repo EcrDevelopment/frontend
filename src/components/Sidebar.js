@@ -2,12 +2,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Menu, Layout, Avatar } from "antd";
-import {
-  // DesktopOutlined,
-  UserOutlined,
-  FileOutlined,
-  HomeOutlined,
-} from "@ant-design/icons";
+import {HomeOutlined} from "@ant-design/icons";
+import { GoContainer } from "react-icons/go";
 
 // Desestructura Sider de Layout
 const { Sider } = Layout;
@@ -17,13 +13,12 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     { key: "1", icon: <HomeOutlined />, label: <Link to={"/"}>{"Inicio"}</Link> },
     // { key: "2", icon: <DesktopOutlined />, label: "Option 2", to: "/option2" },
     {
-      key: "sub1", icon: <UserOutlined />, label: "User", children: [
-        { key: "3", label: <Link to={"/user/tom"}>{"Tom"}</Link>, },
-        { key: "4", label: <Link to={"/user/Bill"}>{"Bill"}</Link>, },
-        { key: "5", label: <Link to={"/user/Alex"}>{"Alex"}</Link>, }
+      key: "sub1", icon: <GoContainer />, label: "Importaciones", children: [
+        { key: "3", label: <Link to={"/importaciones/calculo-fletes-ext"}>{"Fletes Extranjeros."}</Link>, },
+        { key: "4", label: <Link to={"/user/Alex"}>{"Otra Opcion"}</Link>, }
       ]
-    },
-    { key: "8", icon: <FileOutlined />, label: <Link to={"/about"}>{"About"}</Link>, },
+    },   
+    
   ];
 
   return (
@@ -48,8 +43,8 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       </div>
 
       <Menu theme="dark" defaultSelectedKeys={["1"]} mode="inline" items={items}>
-
-      </Menu>
+        
+      </Menu>        
     </Sider>
   );
 };

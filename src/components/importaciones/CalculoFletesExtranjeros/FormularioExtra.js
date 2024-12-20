@@ -1,0 +1,226 @@
+import React,{ useEffect} from 'react';
+import {Form, InputNumber,  Button,  } from 'antd';
+
+
+
+function FormularioExtra({ onDataValidate, precio ,cantidad}) {
+    
+    const [form] = Form.useForm(); 
+    
+    useEffect(() => {
+        if (precio !== undefined) {
+            form.setFieldsValue({ precioProd: precio });
+            
+        }
+        if (cantidad !== undefined && cantidad>0) {
+            form.setFieldsValue({ mermaPermitida: cantidad*65 });
+            form.submit();
+        }else{
+            form.setFieldsValue({ mermaPermitida: 65 });            
+        }   
+    }, [precio, cantidad,form]);
+
+    // Función para manejar el envío del formulario
+    const onFinish = (values) => {
+        //console.log('Valores del formulario:', values);
+        onDataValidate(values);        
+    };
+
+    return (
+        <div className="w-full">
+            <Form
+                form={form}
+                onFinish={onFinish}
+                layout="vertical"
+                initialValues={{                   
+                    //dua: '',
+                    precioProd: precio,                   
+                    mermaPermitida:65,
+                    precioSacosRotos: 2,
+                    precioSacosMojados:3,
+                    precioSacosHumedos:3,
+                    gastosNacionalizacion:5,
+                    margenFinanciero:20,
+                    tipoCambioDescExt:2.247
+                }}
+            >
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-2">              
+
+                    
+                    <div className="">
+                        <Form.Item
+                            label="Merma permitida (kg)"
+                            name="mermaPermitida"
+                            rules={[{
+                                required: true,
+                                message: 'Por favor, ingresa el peso de merma permitida',
+                            },{
+                                type: 'number',
+                                transform: (value) => value ? parseInt(value, 10) : 0,
+                                message: 'El valor de la merma permitida debe ser un número entero',
+                            }]} >
+                            <InputNumber min={1} style={{ width: '100%' }}
+                            />
+                        </Form.Item>
+                    </div>
+
+                    <div className="">
+                        <Form.Item
+                            label="Precio del producto"
+                            name="precioProd"
+                            rules={[{
+                                required: true,
+                                message: 'Por favor, ingresa el precio del producto',
+                            },{
+                                type: 'number',
+                                transform: (value) => value ? parseFloat(value) : 0,
+                                message: 'El Precio del producto debe ser un número decimal',
+                            }]} >
+                            <InputNumber
+                                min={0.01}
+                                step={0.01}
+                                style={{ width: '100%' }}
+                                prefix="$"
+                            />
+                        </Form.Item>
+                    </div>
+
+                    <div className="">
+                        <Form.Item
+                            label="Gastos de nacionalizacion"
+                            name="gastosNacionalizacion"
+                            rules={[{
+                                required: true,
+                                message: 'Por favor, ingresa el monto',
+                            }, {
+                                type: 'number',
+                                transform: (value) => value ? parseFloat(value) : 0,
+                                message: 'El monto debe ser un número decimal',
+                            }]}>
+                            <InputNumber
+                                min={1.0}
+                                step={0.01}
+                                style={{ width: '100%' }}
+                                prefix="$"
+                            />
+                        </Form.Item>
+                    </div>
+
+                    <div className="">
+                        <Form.Item
+                            label="Margen Financiero"
+                            name="margenFinanciero"
+                            rules={[{
+                                required: true,
+                                message: 'Por favor, ingresa el monto',
+                            }, {
+                                type: 'number',
+                                transform: (value) => value ? parseFloat(value) : 0,
+                                message: 'El monto debe ser un número decimal',
+                            }]}>
+                            <InputNumber
+                                min={1.0}
+                                step={0.01}
+                                style={{ width: '100%' }}
+                                prefix="$"
+                            />
+                        </Form.Item>
+                    </div>
+
+                    <div className="">
+                        <Form.Item
+                            label="Monto dsct. por saco roto"
+                            name="precioSacosRotos"
+                            rules={[{
+                                required: true,
+                                message: 'Por favor, ingresa el monto',
+                            }, {
+                                type: 'number',
+                                transform: (value) => value ? parseFloat(value) : 0,
+                                message: 'El monto debe ser un número decimal',
+                            }]}>
+                            <InputNumber
+                                min={1.0}
+                                step={0.01}
+                                style={{ width: '100%' }}
+                                prefix="$"
+                            />
+                        </Form.Item>
+                    </div>
+
+                    <div className="">
+                        <Form.Item
+                            label="Monto dsct. por saco humedo"
+                            name="precioSacosHumedos"
+                            rules={[{
+                                required: true,
+                                message: 'Por favor, ingresa el monto',
+                            }, {
+                                type: 'number',
+                                transform: (value) => value ? parseFloat(value) : 0,
+                                message: 'El monto debe ser un número decimal',
+                            }]}>
+                            <InputNumber
+                                step={0.01}
+                                style={{ width: '100%' }}
+                                prefix="$"
+                            />
+                        </Form.Item>
+                    </div>
+
+                    <div className="">
+                        <Form.Item
+                            label="Monto dsct. por saco mojado"
+                            name="precioSacosMojados"
+                            rules={[{
+                                required: true,
+                                message: 'Por favor, ingresa el monto',
+                            }, {
+                                type: 'number',
+                                transform: (value) => value ? parseFloat(value) : 0,
+                                message: 'El monto debe ser un número decimal',
+                            }]}>
+                            <InputNumber
+                                min={1.0}
+                                step={0.01}
+                                style={{ width: '100%' }}
+                                prefix="$"
+                            />
+                        </Form.Item>
+                    </div>
+
+                    <div className="">
+                        <Form.Item
+                            label="T/C dsct. estiba transportista"
+                            name="tipoCambioDescExt"
+                            rules={[{
+                                required: true,
+                                message: 'Por favor, ingresa el monto',
+                            }, {
+                                type: 'number',
+                                transform: (value) => value ? parseFloat(value) : 0,
+                                message: 'El monto debe ser un número decimal',
+                            }]}>
+                            <InputNumber
+                                min={1.0}
+                                step={0.01}
+                                style={{ width: '100%' }}
+                                prefix="$"
+                            />
+                        </Form.Item>
+                    </div>
+
+                    {/* Botón de enviar */}
+                    <div className="md:mt-7 lg:mt-7">
+                        <Button type="primary" htmlType="submit" className="w-full">
+                           Finalizar
+                        </Button>
+                    </div>
+                </div>
+            </Form>
+
+        </div>
+    );
+}
+
+export default FormularioExtra;
