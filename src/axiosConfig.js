@@ -88,47 +88,55 @@ axiosInstance.interceptors.request.use((config) => {
   return config;
 });
 
-// Response interceptor
 axiosInstance.interceptors.response.use(
-  (response) => response,
+  (response) => response, // Responder normalmente si no hay errores
   async (error) => {
     const originalRequest = error.config;
+
+    // Verificar si es el endpoint de login
+    if (originalRequest.url === '/accounts/auth/login/') {
+      // Devolver el error directamente sin intentar renovar tokens
+      return Promise.reject(error);
+    }
 
     // Si el error es 401 y la solicitud no ha sido marcada para reintentar
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      try {        
+      try {
         const newToken = await refreshAuthToken();
+
         // Actualizamos solo el header de Authorization con el nuevo token
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
-        //Actualizamos el atributo token dentro del cuerpo para que lo valide
+
+        // Actualizamos el token dentro del cuerpo si existe
         if (typeof originalRequest.data === 'string') {
-          // Deserializar la cadena JSON a un objeto
           const parsedData = JSON.parse(originalRequest.data);
-
-          // Modificar el valor del token
           parsedData.token = newToken;
-
-          // Serializar el objeto nuevamente a JSON
           originalRequest.data = JSON.stringify(parsedData);
         } else if (typeof originalRequest.data === 'object' && originalRequest.data !== null) {
-          // Si ya es un objeto, simplemente modificamos el token
           originalRequest.data.token = newToken;
         } else {
-          // Si 'data' es undefined o null, lo inicializamos
           originalRequest.data = JSON.stringify({ token: newToken });
         }
-        return axios(originalRequest); // Reintentar la solicitud original con el nuevo token
-      } catch (refreshError) {        
-        window.dispatchEvent(new CustomEvent('auth-error', {
-          detail: { message: 'Token refresh failed' }
-        }));
+
+        // Reintentar la solicitud original con el nuevo token
+        return axios(originalRequest);
+      } catch (refreshError) {
+        // Emitir un evento para notificar que la renovación del token falló
+        window.dispatchEvent(
+          new CustomEvent('auth-error', {
+            detail: { message: 'Token refresh failed' },
+          })
+        );
         return Promise.reject(refreshError);
       }
     }
+
+    // Devolver otros errores
     return Promise.reject(error);
   }
 );
+
 
 export default axiosInstance;

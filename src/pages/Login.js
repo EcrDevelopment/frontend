@@ -37,19 +37,20 @@ const Login = () => {
     const handleSubmit = async (values) => {
         setLoading(true);
         try {
-            const success = await login(values.username, values.password);
-            if (success) {
-                navigate('/');
-            } else {
-                setError('Credenciales incorrectas. Por favor, intenta nuevamente.');
-            }
+          const result = await login(values.username, values.password);
+          if (result.success) {
+            navigate('/');
+          } else {
+            setError(result.message); // Mostrar el mensaje de error específico
+          }
         } catch (error) {
-            console.error('Error al iniciar sesión', error);
-            setError('Ocurrió un error: ' + error);
+          console.error('Error al iniciar sesión:', error);
+          setError('Ocurrió un error inesperado. Intenta nuevamente más tarde.');
         } finally {
-            setLoading(false);
+          setLoading(false);
         }
-    };
+      };
+      
 
     const styles = {
         container: {

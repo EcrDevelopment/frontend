@@ -9,10 +9,14 @@ import { BiPowerOff } from "react-icons/bi";
 import Sidebar from './components/Sidebar';
 import AppRoutes from './routes/routes';
 import Spinner from './components/Spinner';
-import esES from 'antd/es/locale/es_ES';
+import locale from 'antd/locale/es_ES'; // Usamos el locale español base
+import dayjs from 'dayjs';
+import 'dayjs/locale/es';
 import Login from './pages/Login';
 import ResetPassword from './pages/ResetPassword';
 import ResetPasswordConfirm from './pages/ResetPasswordConfirm';
+
+dayjs.locale('es');
 
 const { Content } = Layout;
 
@@ -91,7 +95,7 @@ const LayoutComponent = () => {
 function App() {
   return (
     <AuthProvider>
-      <ConfigProvider locale={{ locale: esES }}>
+      <ConfigProvider locale={locale}>
         <Router>
           <LayoutComponent />
         </Router>

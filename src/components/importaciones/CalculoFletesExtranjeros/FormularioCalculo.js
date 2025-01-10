@@ -1,11 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { Select, Modal, Form, Input, InputNumber, DatePicker, Button, AutoComplete, notification, Alert, message, Space } from 'antd';
 import axiosInstance from '../../../axiosConfig';
-import { CloseSquareFilled } from '@ant-design/icons';
+import moment from 'moment';
+
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+dayjs.extend(customParseFormat);
+// Formatos de fecha personalizados
+const dateFormatList = ['DD/MM/YYYY', 'DD/MM/YY', 'DD-MM-YYYY', 'DD-MM-YY'];
+
+// Componente para el formulario de cálculo de fletes
 const { Option } = Select;
 
 
-function FormularioCalculo({ onDataValidate }) {
+function FormularioCalculo({ onDataValidate,initialData}) {
     const [baseDatos, setBaseDatos] = useState('');
     const [query, setQuery] = useState([]);
     const [resultados, setResultados] = useState([]);
@@ -21,6 +29,19 @@ function FormularioCalculo({ onDataValidate }) {
     const [form] = Form.useForm();
     const [modalForm] = Form.useForm();
     const [messageApi, contextHolder] = message.useMessage();
+
+    const [formState, setFormState] = useState(initialData || {});
+
+    useEffect(() => {
+        if (initialData) {
+            // Convertir la fechaNumeracion a un objeto moment
+            if (initialData.fechaNumeracion) {
+                initialData.fechaNumeracion = moment(initialData.fechaNumeracion); // Convertir a 'moment'
+            }
+            setFormState(initialData);  // Cargar los datos iniciales
+            form.setFieldsValue(initialData);  // Establecer los valores en el formulario
+        }
+    }, [initialData, form]);
 
     // Función para manejar el cambio en el select de base de datos
     const handleBaseDatosChange = (value) => {
@@ -162,8 +183,9 @@ function FormularioCalculo({ onDataValidate }) {
     }
 
     // Función que se ejecuta al cancelar el modal
-    const handleModalCancel = () => {        
-        setModalMessage("Completa el formulario para poder continuar");
+    const handleModalCancel = () => {   
+        setModalVisible(false);     
+        //setModalMessage("Completa el formulario para poder continuar");
         //messageApi.error("Completa el formulario para poder continuar");
     };
 
@@ -173,27 +195,34 @@ function FormularioCalculo({ onDataValidate }) {
 
     // Función para manejar el envío del formulario
     const onFinish = (values) => {
-        const { numRecojo } = values;
-
-        if (!numRecojo || !/^\d+(,\d+)*$/.test(numRecojo.trim())) {
-            messageApi.error("el campo numero recojo solo acepta numeros separados por comas.");
+        let { numRecojo } = values;
+    
+        // Asegurarte de que numRecojo sea una cadena
+        if (typeof numRecojo !== 'string') {
+            numRecojo = String(numRecojo || ''); // Convertir a cadena
+        }
+    
+        // Validar el formato (único número o lista separada por comas)
+        if (!/^\d+(,\d+)*$/.test(numRecojo.trim())) {
+            messageApi.error("El campo número de recojo solo acepta números separados por comas.");
             return;
         }
-
+    
+        // Convertir la cadena en un arreglo de números
         const numerosArray = numRecojo
             .split(",")
             .map((num) => parseInt(num.trim(), 10)) // Convertir los valores a números
             .filter((num) => !isNaN(num)); // Filtrar valores no numéricos
-
+    
         // Determinar la cantidad de OC seleccionadas
         const numOCSeleccionadas = [ocSeleccionada1, ocSeleccionada2].filter(Boolean).length;
-
+    
         // Verificar que la cantidad de números coincide con las OC seleccionadas
         if (numerosArray.length !== numOCSeleccionadas) {
             messageApi.error(`La cantidad de números de recojo (${numerosArray.length}) no coincide con la cantidad de OC seleccionadas (${numOCSeleccionadas}).`);
             return;
         }
-
+    
         // Asignar los números de recojo a las OC seleccionadas
         const asignaciones = [];
         if (ocSeleccionada1) {
@@ -202,14 +231,16 @@ function FormularioCalculo({ onDataValidate }) {
         if (ocSeleccionada2) {
             asignaciones.push({ oc: ocSeleccionada2.CNUMERO, numeroRecojo: numerosArray[1] });
         }
-
+    
+        // Actualizar los valores en el formulario
         form.setFieldsValue({
-            ordenRecojo: asignaciones
+            ordenRecojo: asignaciones,
         });
-
+    
         onDataValidate(values);
-
     };
+    
+    
 
     return (
         <div className="w-full">
@@ -346,7 +377,7 @@ function FormularioCalculo({ onDataValidate }) {
                                 type: 'date',
                                 message: 'Por favor, ingresa una fecha válida',
                             }]} >
-                            <DatePicker style={{ width: '100%' }} />
+                            <DatePicker format={"DD/MM/YYYY"} style={{ width: '100%' }} />
                         </Form.Item>
                     </div>
                     <div className="">

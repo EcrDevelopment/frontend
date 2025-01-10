@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import FileUpload from '../../FileUpload';
 import UploadFileExcel from './UploadFileExcel';
@@ -9,6 +9,14 @@ import { DeliveredProcedureOutlined } from '@ant-design/icons';
 
 
 const TablaCalculo = ({ onDataValidate }) => {
+
+  useEffect(() => {
+    const storedData = JSON.parse(localStorage.getItem('importaciones_Data_Table')); // Leer los datos del localStorage
+    if (storedData) {
+      setRowData(storedData); // Si hay datos en el localStorage, actualizamos el estado de rowData
+    }
+  }, []); // El segundo parámetro vacío asegura que este efecto se ejecute solo una vez al montar el componente
+
 
   const procesarTabla = () => {
     // Variable para almacenar las filas válidas

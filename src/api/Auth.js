@@ -22,15 +22,27 @@ export async function loginUser(credentials) {
   try {
     const response = await axiosInstance.post('/accounts/auth/login/', credentials);
     return {
+      success: true,
       token: {
         access: response.data.access,
-        refresh: response.data.refresh
+        refresh: response.data.refresh,
       },
-      userData: response.data.user
+      userData: response.data.user,
     };
   } catch (error) {
-    console.error('Error de logeo:', error);
-    return null;
+    let errorMessage = 'Ocurrió un error inesperado.';
+    if (error.response) {
+      // Error con respuesta del servidor
+      if (error.response.status === 401) {
+        errorMessage = 'Credenciales incorrectas. Por favor, intenta nuevamente.';
+      } else {
+        errorMessage = `Error del servidor: ${error.response.data.detail || error.response.statusText}`;
+      }
+    } else if (error.request) {
+      // Error sin respuesta del servidor
+      errorMessage = 'No se pudo conectar al servidor. Por favor, verifica tu conexión.';
+    }
+    return { success: false, message: errorMessage };
   }
 }
 

@@ -81,20 +81,21 @@ export const AuthProvider = ({ children }) => {
   const login = async (username, password) => {
     try {
       const result = await loginUser({ username, password });
-      if (result) {
+      if (result.success) {
         const { token, userData } = result;
         setAuthCookies(token.access, token.refresh);
         localStorage.setItem('user_data', JSON.stringify(userData));
-
         setIsAuthenticated(true);
         setUser(userData);
         localStorage.setItem('lastActivity', Date.now().toString());
-        return true;
+        return { success: true };
+      } else {
+        setIsAuthenticated(false);
+        setUser(null);
+        return { success: false, message: result.message };
       }
-      return false;
     } catch (error) {
-      console.error('Error during login:', error);
-      return false;
+      return { success: false, message: 'Ocurrió un error inesperado durante el inicio de sesión.' };
     }
   };
 
