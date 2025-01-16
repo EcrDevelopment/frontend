@@ -1,15 +1,14 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import FileUpload from '../../FileUpload';
 import UploadFileExcel from './UploadFileExcel';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import { Button, notification } from 'antd';
-import { DeliveredProcedureOutlined } from '@ant-design/icons';
-
+import { DeliveredProcedureOutlined, SyncOutlined } from '@ant-design/icons';
 
 const TablaCalculo = ({ onDataValidate }) => {
-
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
     const storedData = JSON.parse(localStorage.getItem('importaciones_Data_Table')); // Leer los datos del localStorage
     if (storedData) {
@@ -19,6 +18,7 @@ const TablaCalculo = ({ onDataValidate }) => {
 
 
   const procesarTabla = () => {
+    setLoading(true);
     // Variable para almacenar las filas válidas
     const validRows = [];
     const validRowsProccessd = [];
@@ -57,9 +57,9 @@ const TablaCalculo = ({ onDataValidate }) => {
         if (!hasError) {
           validRows.push(row);
         }
+        
         return hasError; // Retorna verdadero si hay un error
-      }
-
+      }      
       return false; // Si no hay datos válidos, no es un error
     });
 
@@ -69,6 +69,7 @@ const TablaCalculo = ({ onDataValidate }) => {
         message: 'ADVERTENCIA',
         description: 'Completar los campos requeridos en cada fila.',
       });
+      setLoading(false);
       return;
     }
 
@@ -76,7 +77,8 @@ const TablaCalculo = ({ onDataValidate }) => {
       notification.warning({
         message: 'ADVERTENCIA',
         description: 'Se debe completar al menos una fila para poder realizar el calculo.',
-      });
+      });      
+      setLoading(false);    
       return;
     }
 
@@ -113,7 +115,9 @@ const TablaCalculo = ({ onDataValidate }) => {
     });
 
 
-
+    
+    setLoading(false); // Desactivar el estado de carga después de 3 segundos
+    
     setRowData(processedRows); // Actualizar el estado con los nuevos datos
     onDataValidate(validRowsProccessd);
 
@@ -153,7 +157,7 @@ const TablaCalculo = ({ onDataValidate }) => {
         pagoEstiba: "Seleccione", // Limpiar pagoEstiba
         cantDesc: 0 // Limpiar cantidad descargada
       }));
-  
+
       // Ahora, llenamos las filas con los nuevos datos recibidos
       data.forEach((item, index) => {
         if (resetRows[index]) {
@@ -165,12 +169,12 @@ const TablaCalculo = ({ onDataValidate }) => {
           };
         }
       });
-  
+
       return resetRows; // Retornamos las filas actualizadas
     });
   };
 
-  const handleDataFromFileExcel=(data)=>{
+  const handleDataFromFileExcel = (data) => {
     // Limpiar las filas (restablecer los valores a su estado inicial)
     setRowData((prevData) => {
       // Mapear las filas previas y restablecer todos los valores a los iniciales
@@ -190,26 +194,26 @@ const TablaCalculo = ({ onDataValidate }) => {
         pagoEstiba: "Seleccione", // Limpiar pagoEstiba
         cantDesc: 0 // Limpiar cantidad descargada
       }));
-  
+
       // Ahora, llenamos las filas con los nuevos datos recibidos
       data.forEach((item, index) => {
         if (resetRows[index]) {
           resetRows[index] = {
             ...resetRows[index], // Mantener los valores reseteados
-            placa: item.placa_salida,  
-            sacosCargados: item.sacos_cargados, 
-            pesoSalida: item.peso_salida, 
-            placaLlegada: item.placa_llegada, 
-            sacosDescargados: item.sacos_descargados, 
+            placa: item.placa_salida,
+            sacosCargados: item.sacos_cargados,
+            pesoSalida: item.peso_salida,
+            placaLlegada: item.placa_llegada,
+            sacosDescargados: item.sacos_descargados,
             pesoLlegada: item.peso_llegada,
-            sacosRotos: item.sacos_rotos, 
-            sacosHumedos: item.sacos_humedos, 
-            sacosMojados: item.sacos_mojados, 
-            pagoEstiba: item.pago_estiba, 
+            sacosRotos: item.sacos_rotos,
+            sacosHumedos: item.sacos_humedos,
+            sacosMojados: item.sacos_mojados,
+            pagoEstiba: item.pago_estiba,
           };
         }
       });
-  
+
       return resetRows; // Retornamos las filas actualizadas
     });
   }
@@ -257,21 +261,25 @@ const TablaCalculo = ({ onDataValidate }) => {
     <div className="ag-theme-alpine" style={{ width: '100%' }}>
       <div className='bd-gray-200 p-2 flex space-x-2 flex-row w-full rounded-md' >
         <FileUpload onDataSelect={handleDataFromChild} />
-        <UploadFileExcel onDataSelect={handleDataFromFileExcel}/>
+        <UploadFileExcel onDataSelect={handleDataFromFileExcel} />
       </div>
       <AgGridReact
         columnDefs={columnDefs}
         rowData={rowData}
         domLayout="autoHeight"
       />
-      <div className='my-2 rounded-md p-3 flex felx-row items-center justify-center '>
+      <div className='my-2 rounded-md p-3 flex felx-row items-center w-1/4'>
         <Button
-          type="primary"
-          icon={<DeliveredProcedureOutlined />}
-          //loading={loadings[1]}
-          onClick={() => procesarTabla()}
-          danger >
-          enviar
+          block
+          color="primary"
+          variant="solid"
+          size="large"
+          icon={loading ? <SyncOutlined spin /> : <DeliveredProcedureOutlined />}
+          loading={loading}
+          onClick={procesarTabla}
+          danger
+        >
+          {loading ? 'Procesando...' : 'Enviar'}
         </Button>
       </div>
     </div>

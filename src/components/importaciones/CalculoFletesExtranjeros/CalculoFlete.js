@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Collapse, notification, Button } from 'antd';
+import { Collapse, notification, Button, Dropdown, message } from 'antd';
 import axiosInstance from '../../../axiosConfig';
-import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, CloseCircleOutlined, SyncOutlined, DownOutlined } from '@ant-design/icons';
+import { MdOutlineCleaningServices } from "react-icons/md";
+import { FiEye } from "react-icons/fi";
+import { MdPreview } from "react-icons/md";
+import { FaRegSave } from "react-icons/fa";
 import TablaCalculo from './TablaCalculo';
 import FormularioCalculo from './FormularioCalculo';
 import FormularioExtra from './FormularioExtra';
 
 
-function CalculoFlete() {
+function CalculoFlete({ resetContent }) {
+
+    const [isLoading, setIsLoading] = useState(false);
     const [dataForm, setDataForm] = useState({});
     const [dataTable, setDataTable] = useState([]);
     const [dataExtraForm, setDataExtraForm] = useState({});
@@ -16,7 +22,28 @@ function CalculoFlete() {
         data2: false,
         data3: false,
     });
+
+    const [messageApi, contextHolder] = message.useMessage();
+
     const [activeKeys, setActiveKeys] = useState(['1']);
+
+    const items = [
+        {
+            label: 'Vista prev. reporte basico.',
+            key: '1',
+            icon: <MdPreview />,
+        },
+        {
+            label: 'Vista prev. reporte detallado.',
+            key: '2',
+            icon: <MdPreview />,
+        },
+    ];
+
+    const handleReset = () => {
+        messageApi.success("enviando Reset.");
+        resetContent(); // Llama a resetContent para reiniciar el componente
+    };
 
     // Cargar datos desde localStorage al inicializar el componente
     useEffect(() => {
@@ -65,14 +92,33 @@ function CalculoFlete() {
                 break;
         }
     };
-    
-    const handleCancel = () => {        
+
+    const handleCancel = () => {
+        localStorage.removeItem('importaciones_Data_Form');
+        localStorage.removeItem('importaciones_Data_Table');
+        localStorage.removeItem('importaciones_Data_Extra');      
+        handleReset();
+    }
+
+    function limpiarData() {
         localStorage.removeItem('importaciones_Data_Form');
         localStorage.removeItem('importaciones_Data_Table');
         localStorage.removeItem('importaciones_Data_Extra');
-        window.location.reload(); 
+        handleReset();
     }
 
+    const handleMenuClick = (e) => {
+        switch (e.key) {
+            case '1':
+                handleDataFinal();
+                break;
+            case '2':
+                handleDataFinalDetallada();
+                break;
+            default:
+                console.log('Opción no reconocida');
+        }
+    }
 
 
     // Manejar la validación de datos
@@ -116,8 +162,8 @@ function CalculoFlete() {
         }
     };
 
-    const handleDataFinalDetallada=()  => { 
-        if(statuses.data1 && statuses.data2 && statuses.data3) {
+    const handleDataFinalDetallada = () => {
+        if (statuses.data1 && statuses.data2 && statuses.data3) {
             const data = { dataForm, dataTable, dataExtraForm };
             axiosInstance
                 .post('/importaciones/generar_reporte_detallado/', data)
@@ -135,6 +181,79 @@ function CalculoFlete() {
                 });
         }
     }
+
+    const handleDropdownClick = (e) => {
+        console.log(e.key);
+    }
+
+
+    const handleGuardarData = async () => {
+
+        // Verificar que todos los datos y estados estén presentes
+        if (!statuses.data1 || !statuses.data2 || !statuses.data3) {
+            notification.warning({
+                message: 'Faltan datos',
+                description: 'Por favor, complete todos los datos necesarios antes de continuar.',
+            });
+            return;
+        }
+
+        // Verificar estructura de datos antes de enviar
+        if (!dataForm || !dataTable || !dataExtraForm) {
+            notification.error({
+                message: 'Error en los datos',
+                description: 'Los datos no están completos o son inválidos. Verifique nuevamente.',
+            });
+            return;
+        }
+
+        // Datos a enviar
+        const data = { dataForm, dataTable, dataExtraForm };
+
+        try {
+            setIsLoading(true);
+
+            // Enviar solicitud al backend
+            const response = await axiosInstance.post('/importaciones/registrar-despacho/', data);
+
+            // Manejar respuesta exitosa
+            notification.success({
+                message: 'Buen trabajo',
+                description: response.data.message,
+            });
+            limpiarData();
+            //window.location.reload();
+
+        } catch (error) {
+            // Manejar errores específicos
+            const statusCode = error.response?.status || 500;
+
+            if (statusCode >= 400 && statusCode < 500) {
+                notification.error({
+                    message: `Error ${statusCode}`,
+                    description: error.response.data.message || 'Ocurrió un error al enviar los datos.',
+                });
+            } else if (statusCode >= 500) {
+                notification.error({
+                    message: 'Error del servidor',
+                    description: 'Hubo un problema en el servidor. Intente nuevamente más tarde.',
+                });
+            } else {
+                notification.error({
+                    message: 'Error desconocido',
+                    description: 'Ocurrió un error inesperado. Revise la consola para más detalles.',
+                });
+            }
+
+            console.error('Error:', error.response || error);
+        } finally {
+
+            setIsLoading(false);
+        }
+
+
+    };
+
 
     // Manejar el cambio en Collapse
     const handleCollapseChange = (keys) => {
@@ -179,23 +298,46 @@ function CalculoFlete() {
     }));
 
     return (
-        <div className="p-2 lg:px-8 lg:py-8 m-auto w-full rounded-md shadow-md space-y-4 space-x-2">
+        
+        <div className="p-2 lg:px-8 lg:py-8 m-auto w-full rounded-md shadow-md space-y-4 space-x-2">     
+              
             <h1 className="text-2xl font-extrabold text-gray-800 mb-6 text-center">Cálculo de Fletes Exterior</h1>
             <Collapse activeKey={activeKeys} onChange={handleCollapseChange} items={collapsePanels} />
-            {statuses.data3 && (
-                <Button type="primary" onClick={handleDataFinal}>
-                    Ver reporte
-                </Button>                 
-            )}
+            {contextHolder} 
             {statuses.data1 && statuses.data2 && statuses.data3 && (
-                <Button type="primary" onClick={handleDataFinalDetallada}>
-                    Ver reporte detallado
-                </Button>                 
+                <>
+                    <div className=' bg-gray-200 shadow-md rounded-md m-2 p-2 block space-y-2  md:space-y-0 md:flex  md:flex-row justify-center space-x-2'>
+                        <Dropdown.Button
+                            type="primary"
+                            icon={<DownOutlined />}
+                            menu={{
+                                items,
+                                onClick: handleMenuClick,
+                            }}
+                            onClick={handleDropdownClick}
+                        >
+                            <FiEye /> Previsualización
+                        </Dropdown.Button>
+                        <Button color="gold" variant="solid" icon={<MdOutlineCleaningServices />}  onClick={limpiarData}>
+                            Limpiar
+                        </Button>
+                        <Button
+                            color="green"
+                            variant="solid"
+                            loading={isLoading}
+                            icon={isLoading ? <SyncOutlined spin /> : <FaRegSave />}
+                            onClick={handleGuardarData}>
+                            {isLoading ? 'Guardando...' : 'Finalizar'}
+                        </Button>
+                    </div>
+                </>
             )}
-            <Button color="danger" variant="solid" onClick={handleCancel}>
-                Cancelar
-            </Button>
+
+
+
         </div>
+
+
     );
 }
 

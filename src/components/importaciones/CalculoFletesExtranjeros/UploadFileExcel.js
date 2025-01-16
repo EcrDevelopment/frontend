@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import axiosInstance from '../../../axiosConfig';
 import { Button } from 'antd';
-import { CloudUploadOutlined,DeleteOutlined } from '@ant-design/icons';
-
+import { DeleteOutlined } from '@ant-design/icons';
+import { RiFileExcel2Line } from "react-icons/ri";
 
 const FileUpload = ({ onDataSelect }) => {
     const [file, setFile] = useState(null);
@@ -125,8 +125,8 @@ const FileUpload = ({ onDataSelect }) => {
     return (
         <div>
             <Button
-                color="default" variant="solid"
-                icon={<CloudUploadOutlined />}
+                color="green" variant="solid"
+                icon={<RiFileExcel2Line />}
                 onClick={() => setIsModalOpen(true)}
             >
                 Cargar Plantilla excel

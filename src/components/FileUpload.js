@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import axiosInstance from '../axiosConfig';
 import { Button } from 'antd';
-import { CloudUploadOutlined,DeleteOutlined } from '@ant-design/icons';
+import { DeleteOutlined } from '@ant-design/icons';
+import { MdOutlineUploadFile } from "react-icons/md";
 
 
 const FileUpload = ({ onDataSelect }) => {
@@ -125,8 +126,9 @@ const FileUpload = ({ onDataSelect }) => {
     return (
         <div>
             <Button
-                type="primary"
-                icon={<CloudUploadOutlined/>}
+                color="gold"
+                variant='solid'
+                icon={<MdOutlineUploadFile />}
                 onClick={() => setIsModalOpen(true)}
                 >
                 Subir Archivo P.L

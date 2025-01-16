@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+
 import { BrowserRouter as Router, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Layout, theme, ConfigProvider } from 'antd';
@@ -16,6 +17,7 @@ import Login from './pages/Login';
 import ResetPassword from './pages/ResetPassword';
 import ResetPasswordConfirm from './pages/ResetPasswordConfirm';
 
+
 dayjs.locale('es');
 
 const { Content } = Layout;
@@ -31,8 +33,9 @@ const PrivateRoute = ({ children }) => {
 const LayoutComponent = () => {
   const { isLoading,logout } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
+  const [contentKey, setContentKey] = useState(0); // Clave dinámica para resetear contenido
   const {
-    token: { colorBgContainer, borderRadiusLG },
+    token: {  colorBgContainer, borderRadiusLG} ,
   } = theme.useToken();
 
   const location = useLocation();
@@ -44,11 +47,17 @@ const LayoutComponent = () => {
 
   if (isLoading) return <Spinner />;
 
+  // Función para restablecer el contenido
+  const resetContent = () => {
+    setContentKey(prevKey => prevKey + 1);
+  };
+
   return (
     <Layout style={{ minHeight: '100vh' }}>
       {!hideSidebar && <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />}
       <Layout style={{ marginLeft: hideSidebar ? 0 : (collapsed ? 80 : 200) }}>
         <Content
+          key={contentKey} 
           style={{
             margin: '0 2px',
             padding: 0,
@@ -65,7 +74,7 @@ const LayoutComponent = () => {
             <ResetPasswordConfirm />
           ) : (
             <PrivateRoute>
-              <AppRoutes />
+              <AppRoutes resetContent={resetContent}/>
             </PrivateRoute>
           )}
         </Content>

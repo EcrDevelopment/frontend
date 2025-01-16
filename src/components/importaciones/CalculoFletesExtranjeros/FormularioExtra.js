@@ -7,14 +7,14 @@ function FormularioExtra({ onDataValidate, precio ,cantidad}) {
     
     const [form] = Form.useForm(); 
     
+    ///useEffect para setear los valores iniciales del formulario
     useEffect(() => {
         if (precio !== undefined) {
-            form.setFieldsValue({ precioProd: precio });
-            
+            form.setFieldsValue({ precioProd: precio });            
         }
         if (cantidad !== undefined && cantidad>0) {
             form.setFieldsValue({ mermaPermitida: cantidad*65 });
-            form.submit();
+            //form.submit();
         }else{
             form.setFieldsValue({ mermaPermitida: 65 });            
         }   
@@ -22,7 +22,6 @@ function FormularioExtra({ onDataValidate, precio ,cantidad}) {
 
     // Función para manejar el envío del formulario
     const onFinish = (values) => {
-        //console.log('Valores del formulario:', values);
         onDataValidate(values);        
     };
 
