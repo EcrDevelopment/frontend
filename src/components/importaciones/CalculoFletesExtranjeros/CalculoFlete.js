@@ -14,6 +14,7 @@ import FormularioExtra from './FormularioExtra';
 function CalculoFlete({ resetContent }) {
 
     const [isLoading, setIsLoading] = useState(false);
+    const [reportStatus,setReportStatus] = useState(false);
     const [dataForm, setDataForm] = useState({});
     const [dataTable, setDataTable] = useState([]);
     const [dataExtraForm, setDataExtraForm] = useState({});
@@ -134,6 +135,7 @@ function CalculoFlete({ resetContent }) {
 
     // Manejar el envío final
     const handleDataFinal = () => {
+        setReportStatus(true);
         if (statuses.data1 && statuses.data2 && statuses.data3) {
             const data = { dataForm, dataTable, dataExtraForm };
             axiosInstance
@@ -141,6 +143,7 @@ function CalculoFlete({ resetContent }) {
                 .then((response) => {
                     const file = new Blob([response.data], { type: 'application/pdf' });
                     const fileURL = URL.createObjectURL(file);
+                    setReportStatus(false);
                     window.open(fileURL, '_blank');
                     notification.success({
                         message: 'Buen trabajo',
@@ -148,6 +151,7 @@ function CalculoFlete({ resetContent }) {
                     });
                 })
                 .catch((error) => {
+                    setReportStatus(false);
                     notification.error({
                         message: 'OCURRIO UN ERROR',
                         description: 'error:' + error.response,
@@ -155,6 +159,7 @@ function CalculoFlete({ resetContent }) {
                     console.error('Error al generar el reporte:', error.response);
                 });
         } else {
+            setReportStatus(false);
             notification.warning({
                 message: 'ADVERTENCIA',
                 description: 'Los datos a enviar no son válidos, complete correctamente el formulario.',
@@ -163,6 +168,7 @@ function CalculoFlete({ resetContent }) {
     };
 
     const handleDataFinalDetallada = () => {
+        setReportStatus(true);
         if (statuses.data1 && statuses.data2 && statuses.data3) {
             const data = { dataForm, dataTable, dataExtraForm };
             axiosInstance
@@ -170,6 +176,7 @@ function CalculoFlete({ resetContent }) {
                 .then((response) => {
                     const file = new Blob([response.data], { type: 'application/pdf' });
                     const fileURL = URL.createObjectURL(file);
+                    setReportStatus(false);
                     window.open(fileURL, '_blank');
                     notification.success({
                         message: 'Buen trabajo',
@@ -177,6 +184,11 @@ function CalculoFlete({ resetContent }) {
                     });
                 })
                 .catch((error) => {
+                    setReportStatus(false);
+                    notification.error({
+                        message: 'ocurrio un error',
+                        description: 'No fue posible generar el reporte.',
+                    });
                     console.error('Error al generar el reporte:', error.response);
                 });
         }
@@ -185,7 +197,6 @@ function CalculoFlete({ resetContent }) {
     const handleDropdownClick = (e) => {
         console.log(e.key);
     }
-
 
     const handleGuardarData = async () => {
 
@@ -212,10 +223,8 @@ function CalculoFlete({ resetContent }) {
 
         try {
             setIsLoading(true);
-
             // Enviar solicitud al backend
             const response = await axiosInstance.post('/importaciones/registrar-despacho/', data);
-
             // Manejar respuesta exitosa
             notification.success({
                 message: 'Buen trabajo',
@@ -223,7 +232,6 @@ function CalculoFlete({ resetContent }) {
             });
             limpiarData();
             //window.location.reload();
-
         } catch (error) {
             // Manejar errores específicos
             const statusCode = error.response?.status || 500;
@@ -244,16 +252,13 @@ function CalculoFlete({ resetContent }) {
                     description: 'Ocurrió un error inesperado. Revise la consola para más detalles.',
                 });
             }
-
             console.error('Error:', error.response || error);
         } finally {
-
             setIsLoading(false);
         }
 
 
     };
-
 
     // Manejar el cambio en Collapse
     const handleCollapseChange = (keys) => {
@@ -297,10 +302,8 @@ function CalculoFlete({ resetContent }) {
         children: content,
     }));
 
-    return (
-        
-        <div className="p-2 lg:px-8 lg:py-8 m-auto w-full rounded-md shadow-md space-y-4 space-x-2">     
-              
+    return (        
+        <div className="p-2 lg:px-8 lg:py-8 m-auto w-full rounded-md shadow-md space-y-4 space-x-2">    
             <h1 className="text-2xl font-extrabold text-gray-800 mb-6 text-center">Cálculo de Fletes Exterior</h1>
             <Collapse activeKey={activeKeys} onChange={handleCollapseChange} items={collapsePanels} />
             {contextHolder} 
@@ -310,6 +313,7 @@ function CalculoFlete({ resetContent }) {
                         <Dropdown.Button
                             type="primary"
                             icon={<DownOutlined />}
+                            loading={reportStatus}
                             menu={{
                                 items,
                                 onClick: handleMenuClick,
@@ -332,12 +336,7 @@ function CalculoFlete({ resetContent }) {
                     </div>
                 </>
             )}
-
-
-
         </div>
-
-
     );
 }
 

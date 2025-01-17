@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const baseURL = 'http://10.168.0.5:8000';
+const baseURL = 'http://localhost:8000';
 
 const axiosInstance = axios.create({
   baseURL,
@@ -10,8 +10,39 @@ const axiosInstance = axios.create({
   withCredentials: true,
 });
 
+
 let isRefreshing = false;
 let refreshSubscribers = [];
+
+
+const fetchCsrfToken = async () => {
+  try {
+    const response = await axios.get(`${baseURL}/accounts/get-csrf-token/`, {
+      withCredentials: true, // Incluye las cookies en la solicitud
+    });
+
+    const csrfToken = response.data.csrf_Token;    
+
+    // Opcional: Almacena el token CSRF en las cookies manualmente (si no se hace automáticamente)
+    if (csrfToken) {
+      document.cookie = `csrftoken=${csrfToken}; path=/; max-age=3600`; // 1 hora
+    }
+
+    return csrfToken;
+  } catch (error) {
+    console.error('Error fetching CSRF token:', error);
+    return null;
+  }
+};
+
+(async () => {
+  const csrfToken = await fetchCsrfToken();
+  if (csrfToken) {
+    
+  } else {
+    console.error('No se pudo inicializar el Token CSRF');
+  }
+})();
 
 const notifySubscribers = (token) => {
   refreshSubscribers.forEach((callback) => callback(token));
@@ -66,25 +97,16 @@ const refreshAuthToken = async () => {
 };
 
 
-function getCsrfToken() {
-  const csrfToken = document.cookie
-    .split('; ')
-    .find(row => row.startsWith('csrftoken='))
-    ?.split('=')[1];
-  return csrfToken || '';
-}
+
+
 
 // Request interceptor
 axiosInstance.interceptors.request.use((config) => {
   const token = getTokenFromCookie('access_token');  
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;    
-  }
-  /*
-  const csrfToken = getCsrfToken();
-  if (csrfToken) {
-      config.headers['X-CSRFToken'] = csrfToken; // El nombre correcto del encabezado en Django
-  }*/
+  }  
+  
   return config;
 });
 
