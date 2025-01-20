@@ -138,6 +138,7 @@ function CalculoFlete({ resetContent }) {
         setReportStatus(true);
         if (statuses.data1 && statuses.data2 && statuses.data3) {
             const data = { dataForm, dataTable, dataExtraForm };
+            console.log(data);
             axiosInstance
                 .post('/importaciones/generar_reporte/', data)
                 .then((response) => {
@@ -236,23 +237,29 @@ function CalculoFlete({ resetContent }) {
             // Manejar errores específicos
             const statusCode = error.response?.status || 500;
 
-            if (statusCode >= 400 && statusCode < 500) {
+        if (statusCode >= 400 && statusCode < 500) {
+            //console.log(error.response.data);
+            const errorMessage = error.response.data.message || 'Ocurrió un error al enviar los datos.';
+            
+            // Manejar error específico del número de recojo duplicado
+            if (errorMessage.includes('número de recojo ya existe')) {
+                notification.error({
+                    message: 'Número de recojo duplicado',
+                    description: 'El número de recojo ingresado ya existe. Por favor, utilice un número diferente.',
+                });
+            } else {
                 notification.error({
                     message: `Error ${statusCode}`,
-                    description: error.response.data.message || 'Ocurrió un error al enviar los datos.',
+                    description: errorMessage,
                 });
-            } else if (statusCode >= 500) {
-                notification.error({
-                    message: 'Error del servidor',
-                    description: 'Hubo un problema en el servidor. Intente nuevamente más tarde.',
-                });
+            }
             } else {
                 notification.error({
                     message: 'Error desconocido',
                     description: 'Ocurrió un error inesperado. Revise la consola para más detalles.',
                 });
             }
-            console.error('Error:', error.response || error);
+            //console.error('Error:', error.response || error);
         } finally {
             setIsLoading(false);
         }

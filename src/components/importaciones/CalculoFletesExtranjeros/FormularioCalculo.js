@@ -39,7 +39,18 @@ function FormularioCalculo({ onDataValidate,initialData}) {
                 initialData.fechaNumeracion = moment(initialData.fechaNumeracion); // Convertir a 'moment'
             }
             setFormState(initialData);  // Cargar los datos iniciales
-            form.setFieldsValue(initialData);  // Establecer los valores en el formulario
+            form.setFieldsValue(initialData);
+            if (initialData.ordenRecojo?.length > 0) {
+                initialData.ordenRecojo.forEach((element, index) => {
+                    if (index === 0) {
+                        setocSeleccionada1(element.oc); // Primer elemento
+                    } else if (index === 1) {
+                        setocSeleccionada2(element.oc); // Segundo elemento
+                    }
+                });
+            }
+
+            
         }
     }, [initialData, form]);
 
@@ -103,19 +114,19 @@ function FormularioCalculo({ onDataValidate,initialData}) {
             if (values.length === 2) {
                 setQuery(values);
                 const [oc1, oc2] = values;
-                const registro2 = resultados.find(registro => registro.CNUMERO === oc2);
+                const registro2 = resultados.find(registro => registro.numero_oc === oc2);
                 setocSeleccionada2(registro2);
                 setModalVisible(true);
             } else if (values.length === 1) {
                 setQuery(values);
                 // Si solo hay una orden seleccionada, usar su precio directamente
-                const registro = resultados.find(registro => registro.CNUMERO === values[0]);
+                const registro = resultados.find(registro => registro.numero_oc=== values[0]);
                 if (registro) {
                     setocSeleccionada1(registro);
                     form.setFieldsValue({
                         proveedor: registro.proveedor,
-                        producto: registro.CDESARTIC,
-                        precioProducto: registro.NPREUNITA,
+                        producto: registro.producto,
+                        precioProducto: registro.precio_unitario,
                     });
                 }
             }
@@ -146,15 +157,12 @@ function FormularioCalculo({ onDataValidate,initialData}) {
             // Validar los campos del formulario
             const values = await modalForm.validateFields();
             let sumaPesos = values.peso1 + values.peso2;
-            let sumaTotalBruto = ((ocSeleccionada1.NPREUNITA * 1000) * values.peso1) + ((ocSeleccionada2.NPREUNITA * 1000) * values.peso2);
+            let sumaTotalBruto = ((ocSeleccionada1.precio_unitario * 1000) * values.peso1) + ((ocSeleccionada2.precio_unitario * 1000) * values.peso2);
             let precioProrrateado = (sumaTotalBruto / sumaPesos).toFixed(2);
             let precioFinal = (precioProrrateado / 1000).toFixed(3);
-            //console.log(`Peso 1: ${values.peso1}, Peso 2: ${values.peso2}`);
-            //console.log(`precio 1: ${ocSeleccionada1.NPREUNITA * 1000}, precio 2: ${ocSeleccionada2.NPREUNITA * 1000}`);
-            //console.log('precio prorrateado: ', precioFinal);
             form.setFieldsValue({
                 proveedor: ocSeleccionada1.proveedor,
-                producto: ocSeleccionada1.CDESARTIC,
+                producto: ocSeleccionada1.producto,
                 precioProducto: parseFloat(precioFinal),
                 numRecojo: values.recojo1 + "," + values.recojo2,
             });
@@ -173,11 +181,11 @@ function FormularioCalculo({ onDataValidate,initialData}) {
         messageApi.error(`Quitaste las OC: ${value}`);
         const oc1=ocSeleccionada1;
         const oc2=ocSeleccionada2;
-        if(oc1.CNUMERO===value){
+        if(oc1 && oc1.numero_oc===value){
             setocSeleccionada1(oc2);
             setocSeleccionada2("")
-        }else if(oc2.CNUMERO===value){
-            setocSeleccionada2(null);    
+        }else if(oc2 && oc2.numero_oc===value){
+            setocSeleccionada2("");    
         }
         
     }
@@ -192,11 +200,11 @@ function FormularioCalculo({ onDataValidate,initialData}) {
     const closeMessage = () => {
         setModalMessage('');
     };
-
-    // Función para manejar el envío del formulario
-    const onFinish = (values) => {
-        let { numRecojo } = values;
     
+    const onFinish = (values) => {
+        let { numRecojo } = values;       
+       
+
         // Asegurarte de que numRecojo sea una cadena
         if (typeof numRecojo !== 'string') {
             numRecojo = String(numRecojo || ''); // Convertir a cadena
@@ -226,22 +234,17 @@ function FormularioCalculo({ onDataValidate,initialData}) {
         // Asignar los números de recojo a las OC seleccionadas
         const asignaciones = [];
         if (ocSeleccionada1) {
-            asignaciones.push({ oc: ocSeleccionada1.CNUMERO, numeroRecojo: numerosArray[0] });
+            asignaciones.push({ oc: ocSeleccionada1, numeroRecojo: numerosArray[0] });
         }
         if (ocSeleccionada2) {
-            asignaciones.push({ oc: ocSeleccionada2.CNUMERO, numeroRecojo: numerosArray[1] });
+            asignaciones.push({ oc: ocSeleccionada2, numeroRecojo: numerosArray[1] });
         }
     
-        // Actualizar los valores en el formulario
-        form.setFieldsValue({
-            ordenRecojo: asignaciones,
-        });
-    
+        values.ordenRecojo = asignaciones;       
+       
         onDataValidate(values);
-    };
+    };    
     
-    
-
     return (
         <div className="w-full">
             {contextHolder}
@@ -251,9 +254,10 @@ function FormularioCalculo({ onDataValidate,initialData}) {
                 layout="vertical"
                 initialValues={{
                     producto: '',
-                    proveedor: '',
+                    proveedor: '',                    
                     dua: '',
-                    numRecojo: 1,
+                    ordenRecojo: [],
+                    numRecojo: '1',
                     cartaPorte: '',
                     numFactura: '',
                     fechaNumeracion: '',
@@ -303,8 +307,8 @@ function FormularioCalculo({ onDataValidate,initialData}) {
                                 notFoundContent={null}
                             >
                                 {resultados.map((registro) => (
-                                    <Option key={registro.CNUMERO} value={registro.CNUMERO}>
-                                        {registro.CNUMERO}
+                                    <Option key={registro.numero_oc} value={registro.numero_oc}>
+                                        {registro.numero_oc}
                                     </Option>
                                 ))}
                             </Select>
@@ -328,8 +332,8 @@ function FormularioCalculo({ onDataValidate,initialData}) {
                     </Form.Item>
 
                     <Form.Item
-                        name="ordenRecojo"
-                        hidden
+                        label="Orden de recojo"
+                        name="ordenRecojo"                        
                     >
                         <Input />
                     </Form.Item>
@@ -489,7 +493,7 @@ function FormularioCalculo({ onDataValidate,initialData}) {
                 <Form form={modalForm} layout="vertical">
                     {/* Información y primer input */}
                     <div className='pt-3 px-3 mt-3 border rounded rounded-md shadow-md bg-gray-200'>
-                        <p>{ocSeleccionada1 ? `${ocSeleccionada1.CNUMERO} - ${ocSeleccionada1.CDESARTIC}` : ''}</p>
+                        <p>{ocSeleccionada1 ? `${ocSeleccionada1.numero_oc} - ${ocSeleccionada1.producto}` : ''}</p>
                         <div className='flex gap-4 justify-items-sapce-around'>
                             <Form.Item
                                 name="peso1"
@@ -529,7 +533,7 @@ function FormularioCalculo({ onDataValidate,initialData}) {
                     </div>
 
                     <div className='pt-3 px-3 mt-3 border rounded rounded-md shadow-md bg-gray-200'>
-                        <p>{ocSeleccionada2 ? `${ocSeleccionada2.CNUMERO} - ${ocSeleccionada2.CDESARTIC}` : ''}</p>
+                        <p>{ocSeleccionada2 ? `${ocSeleccionada2.numero_oc} - ${ocSeleccionada2.producto}` : ''}</p>
                         <div className='flex gap-4 justify-items-sapce-around'>
                             <Form.Item
                                 name="peso2"
