@@ -332,8 +332,9 @@ function FormularioCalculo({ onDataValidate,initialData}) {
                     </Form.Item>
 
                     <Form.Item
-                        label="Orden de recojo"
-                        name="ordenRecojo"                        
+                        
+                        name="ordenRecojo"  
+                        hidden                      
                     >
                         <Input />
                     </Form.Item>

@@ -138,7 +138,6 @@ function CalculoFlete({ resetContent }) {
         setReportStatus(true);
         if (statuses.data1 && statuses.data2 && statuses.data3) {
             const data = { dataForm, dataTable, dataExtraForm };
-            console.log(data);
             axiosInstance
                 .post('/importaciones/generar_reporte/', data)
                 .then((response) => {
@@ -221,7 +220,7 @@ function CalculoFlete({ resetContent }) {
 
         // Datos a enviar
         const data = { dataForm, dataTable, dataExtraForm };
-
+        //console.log('data enviada',data);
         try {
             setIsLoading(true);
             // Enviar solicitud al backend

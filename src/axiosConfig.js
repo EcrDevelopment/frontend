@@ -74,22 +74,22 @@ const refreshAuthToken = async () => {
   }
 
   isRefreshing = true;
-  console.log('Iniciando refresh de token...');
+  //console.log('Iniciando refresh de token...');
 
   try {
     const response = await axios.post(`${baseURL}/accounts/auth/token/refresh/`, { refresh: refreshTokenCookie }, { withCredentials: true });
     const newToken = response.data.access;
     const newRefreshToken = response.data.refresh;
-    console.log('Nuevo Token generado:', newToken);
+    //console.log('Nuevo Token generado:', newToken);
 
     // Actualizar las cookies con el nuevo token
     setAuthCookies(newToken, newRefreshToken);
-    console.log('Cookies actualizadas');
+    //console.log('Cookies actualizadas');
 
     notifySubscribers(newToken);
     return newToken;
   } catch (error) {
-    console.error('Error en refresh de token:', error);
+    //console.error('Error en refresh de token:', error);
     throw error;
   } finally {
     isRefreshing = false;
