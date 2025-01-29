@@ -1,5 +1,5 @@
 import React,{ useEffect} from 'react';
-import {Form, InputNumber,  Button,  } from 'antd';
+import {Form, InputNumber,  Button,DatePicker  } from 'antd';
 
 
 
@@ -206,6 +206,21 @@ function FormularioExtra({ onDataValidate, precio ,cantidad}) {
                                 style={{ width: '100%' }}
                                 prefix="$"
                             />
+                        </Form.Item>
+                    </div>
+
+                    <div className="">
+                        <Form.Item
+                            label="Fecha de llegada"
+                            name="fechaLlegada"
+                            rules={[{
+                                required: true,
+                                message: 'Por favor, ingresa la fecha de llegada',
+                            }, {
+                                type: 'date',
+                                message: 'Por favor, ingresa una fecha válida',
+                            }]} >
+                            <DatePicker format={"DD/MM/YYYY"} style={{ width: '100%' }} />
                         </Form.Item>
                     </div>
 
