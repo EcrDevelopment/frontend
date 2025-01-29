@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axiosInstance from '../../../axiosConfig';
-import { Button } from 'antd';
+import { Button, notification } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
 import { RiFileExcel2Line } from "react-icons/ri";
 
@@ -37,11 +37,32 @@ const FileUpload = ({ onDataSelect }) => {
                     'Content-Type': 'multipart/form-data',
                 },
             });
+            if (response.data.status === "success") {
+                //console.log("respuesta: ", response)
+                setPreviewData(response.data.tabla);
 
-            setPreviewData(response);
+            }else if (response.data.status === "error") {
+                // Si el estado es "warning", puedes manejarlo de forma diferente
+                notification.error({
+                    message: 'Error',
+                    description: `ocurrio un error: ${response.data.error}`,
+                });
+            }else {
+                //console.log("respuesta: ", response.data)
+                notification.error({
+                    message: 'ERROR',
+                    description: `Los datos en el archivo no son válidos. Por favor, verifica el archivo y vuelve a intentarlo.`,
+                });
+            }
+
         } catch (err) {
+           
+            notification.error({
+                message: 'Error',
+                description: `${err.response.data.error}`,
+            });
             console.error('Error al subir archivo:', err.response || err.message);
-            setError(err.response.data.error);
+            setError(err.response.error);
         } finally {
             setLoading(false);
         }
@@ -55,7 +76,7 @@ const FileUpload = ({ onDataSelect }) => {
         setError(''); // Limpiar el error si existiera
         setPreviewData(null); // Limpiar la vista previa si existiera   
     };
-
+    /*
     const handleDeleteRow = (tableIndex, rowIndex) => {
         setPreviewData(prev => {
             if (!prev) return null;
@@ -121,6 +142,22 @@ const FileUpload = ({ onDataSelect }) => {
             return newPreviewData;
         });
     };
+    */
+
+    const handleDeleteColumn = (columnIndex) => {
+        const updatedData = previewData.map((row) => {
+            const updatedRow = { ...row };
+            delete updatedRow[Object.keys(row)[columnIndex]];
+            return updatedRow;
+        });
+        setPreviewData(updatedData);
+    };
+
+    const handleDeleteRow = (rowIndex) => {
+        const updatedData = previewData.filter((_, index) => index !== rowIndex);
+        setPreviewData(updatedData);
+    };
+
 
     return (
         <div>
@@ -156,67 +193,67 @@ const FileUpload = ({ onDataSelect }) => {
 
                         {previewData && (
                             <div className="mt-8">
+                                <h3 className="text-lg font-semibold mb-4">Datos Extraídos de Excel:</h3>
+                                {previewData.length > 0 ? (
+                                    <>
+                                        <div className="overflow-x-auto max-w-full">
+                                            <table className="table-auto w-full border border-gray-300 rounded-md shadow-md">
+                                                <thead>
+                                                    <tr className="bg-gray-100 text-left">
+                                                        {Object.keys(previewData[0]).map((header, columnIndex) => (
+                                                            <th key={columnIndex} className="px-4 py-2 border-b font-semibold text-gray-700 relative group">
+                                                                {header}
+                                                                <button
+                                                                    onClick={() => handleDeleteColumn(columnIndex)}
+                                                                    className="absolute top-1/2 right-2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300 ease-in-out hover:bg-gray-200 rounded-full p-1"
+                                                                >
+                                                                    <DeleteOutlined className="text-lg text-gray-500 hover:text-red-500" />
+                                                                </button>
+                                                            </th>
+                                                        ))}
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {previewData.map((row, rowIndex) => (
+                                                        <tr key={rowIndex} className="relative group hover:bg-gray-50">
+                                                            {Object.values(row).map((cell, cellIndex) => {
+                                                                const isLastColumn = cellIndex === Object.values(row).length - 1;
+                                                                return (
+                                                                    <td key={cellIndex} className="px-4 py-2 border-b text-gray-600">
+                                                                        {cell}
+                                                                        {isLastColumn && (
+                                                                            <div className="absolute mr-2 right-0 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300 ease-in-out hover:bg-gray-200 p-1 rounded-full">
+                                                                                <button
+                                                                                    onClick={() => handleDeleteRow(rowIndex)}
+                                                                                    className="text-base text-gray-500 hover:text-red-500 p-0.5 transition-all duration-300 ease-in-out"
+                                                                                >
+                                                                                    <DeleteOutlined className="text-base" />
+                                                                                </button>
+                                                                            </div>
+                                                                        )}
+                                                                    </td>
+                                                                );
+                                                            })}
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div>
+                                            <button
+                                                onClick={() => handleSelectData(previewData)}
+                                                className="mt-4 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md"
+                                            >
+                                                Enviar datos
+                                            </button>
+                                        </div>
+                                    </>
 
-                                {previewData.data && (
-                                    <div>
-                                        <h3 className="text-lg font-semibold mb-4">Datos Extraídos de Excel:</h3>
-                                        {Object.keys(previewData.data).map((sheet, tableIndex) => (
-                                            <div key={tableIndex} className="mb-8">
-                                                <div className="overflow-x-auto max-w-full">
-                                                    <table className="table-auto w-full border border-gray-300 rounded-md shadow-md">
-                                                        <thead>
-                                                            <tr className="bg-gray-100 text-left">
-                                                                {Object.keys(previewData.data[sheet][0]).map((header, columnIndex) => (
-                                                                    <th key={columnIndex} className="px-4 py-2 border-b font-semibold text-gray-700 relative group">
-                                                                        {header}
-                                                                        <button
-                                                                            onClick={() => handleDeleteColumn(tableIndex, columnIndex)}
-                                                                            className="absolute top-1/2 right-2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300 ease-in-out hover:bg-gray-200 rounded-full p-1"
-                                                                        >
-                                                                            <DeleteOutlined className="text-lg text-gray-500 hover:text-red-500" />
-                                                                        </button>
-                                                                    </th>
-                                                                ))}
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {previewData.data[sheet].map((row, rowIndex) => (
-                                                                <tr key={rowIndex} className="relative group hover:bg-gray-50">
-                                                                    {Object.values(row).map((cell, cellIndex) => {
-                                                                        const isLastColumn = cellIndex === Object.values(row).length - 1; // Identificar la última columna
-                                                                        return (
-                                                                            <td key={cellIndex} className="px-4 py-2 border-b text-gray-600">
-                                                                                {cell}
-                                                                                {isLastColumn && ( // Colocar el botón solo en la última columna
-                                                                                    <div className="absolute mr-2 right-0 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300 ease-in-out hover:bg-gray-200 p-1 rounded-full">
-                                                                                        <button
-                                                                                            onClick={() => handleDeleteRow(tableIndex, rowIndex)}
-                                                                                            className="text-base text-gray-500 hover:text-red-500 p-0.5 transition-all duration-300 ease-in-out"
-                                                                                        >
-                                                                                            <DeleteOutlined className="text-base" />
-                                                                                        </button>
-                                                                                    </div>
-                                                                                )}
-                                                                            </td>
-                                                                        );
-                                                                    })}
-                                                                </tr>
-                                                            ))}
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                                <button
-                                                    onClick={() => handleSelectData(previewData.data[sheet])}
-                                                    className="mt-4 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md"
-                                                >
-                                                    Seleccionar esta hoja
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
+
+
+                                ) : (
+                                    <p>No hay datos disponibles para mostrar.</p>
                                 )}
-
-
                             </div>
                         )}
 

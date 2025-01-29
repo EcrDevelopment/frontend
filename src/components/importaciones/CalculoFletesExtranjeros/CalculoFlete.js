@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Collapse, notification, Button, Dropdown, message } from 'antd';
+import { Collapse, notification, Button, Dropdown, message,Modal } from 'antd';
 import axiosInstance from '../../../axiosConfig';
 import { CheckCircleOutlined, CloseCircleOutlined, SyncOutlined, DownOutlined } from '@ant-design/icons';
 import { MdOutlineCleaningServices } from "react-icons/md";
@@ -13,8 +13,9 @@ import FormularioExtra from './FormularioExtra';
 
 function CalculoFlete({ resetContent }) {
 
+    const [isModalVisible, setIsModalVisible] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [reportStatus,setReportStatus] = useState(false);
+    const [reportStatus, setReportStatus] = useState(false);
     const [dataForm, setDataForm] = useState({});
     const [dataTable, setDataTable] = useState([]);
     const [dataExtraForm, setDataExtraForm] = useState({});
@@ -53,6 +54,24 @@ function CalculoFlete({ resetContent }) {
         const savedDataExtra = localStorage.getItem('importaciones_Data_Extra');
 
         // Si hay datos, actualiza los estados correspondientes
+        if (savedDataForm || savedDataTable || savedDataExtra) {
+            setIsModalVisible(true); // Muestra el modal solo si hay datos en localStorage
+        }
+
+        // Configurar las claves activas del Collapse
+        const keys = [];
+        if (savedDataForm) keys.push('1');
+        if (savedDataTable) keys.push('2');
+        if (savedDataExtra) keys.push('3');
+        setActiveKeys(keys.length > 0 ? keys : ['1']);
+    }, []);
+
+    const handleOk = () => {
+        const savedDataForm = localStorage.getItem('importaciones_Data_Form');
+        const savedDataTable = localStorage.getItem('importaciones_Data_Table');
+        const savedDataExtra = localStorage.getItem('importaciones_Data_Extra');
+
+        // Si hay datos, actualiza los estados correspondientes
         if (savedDataForm) {
             setDataForm(JSON.parse(savedDataForm));
             setStatuses((prev) => ({ ...prev, data1: true }));
@@ -66,13 +85,19 @@ function CalculoFlete({ resetContent }) {
             setStatuses((prev) => ({ ...prev, data3: true }));
         }
 
-        // Configurar las claves activas del Collapse
-        const keys = [];
-        if (savedDataForm) keys.push('1');
-        if (savedDataTable) keys.push('2');
-        if (savedDataExtra) keys.push('3');
-        setActiveKeys(keys.length > 0 ? keys : ['1']);
-    }, []);
+        // Cierra el modal
+        setIsModalVisible(false);
+    };
+
+    const handleCancelModal = () => {
+        // Elimina los datos de localStorage
+        localStorage.removeItem('importaciones_Data_Form');
+        localStorage.removeItem('importaciones_Data_Table');
+        localStorage.removeItem('importaciones_Data_Extra');
+        limpiarData();
+        // Cierra el modal
+        setIsModalVisible(false);
+    };
 
     // Guardar datos en localStorage y actualizar estados
     const saveAndSharedData = (data, key) => {
@@ -97,7 +122,7 @@ function CalculoFlete({ resetContent }) {
     const handleCancel = () => {
         localStorage.removeItem('importaciones_Data_Form');
         localStorage.removeItem('importaciones_Data_Table');
-        localStorage.removeItem('importaciones_Data_Extra');      
+        localStorage.removeItem('importaciones_Data_Extra');
         handleReset();
     }
 
@@ -120,7 +145,6 @@ function CalculoFlete({ resetContent }) {
                 console.log('Opción no reconocida');
         }
     }
-
 
     // Manejar la validación de datos
     const handleValidation = (key, data) => {
@@ -237,22 +261,22 @@ function CalculoFlete({ resetContent }) {
             // Manejar errores específicos
             const statusCode = error.response?.status || 500;
 
-        if (statusCode >= 400 && statusCode < 500) {
-            //console.log(error.response.data);
-            const errorMessage = error.response.data.message || 'Ocurrió un error al enviar los datos.';
-            
-            // Manejar error específico del número de recojo duplicado
-            if (errorMessage.includes('número de recojo ya existe')) {
-                notification.error({
-                    message: 'Número de recojo duplicado',
-                    description: 'El número de recojo ingresado ya existe. Por favor, utilice un número diferente.',
-                });
-            } else {
-                notification.error({
-                    message: `Error ${statusCode}`,
-                    description: errorMessage,
-                });
-            }
+            if (statusCode >= 400 && statusCode < 500) {
+                //console.log(error.response.data);
+                const errorMessage = error.response.data.message || 'Ocurrió un error al enviar los datos.';
+
+                // Manejar error específico del número de recojo duplicado
+                if (errorMessage.includes('número de recojo ya existe')) {
+                    notification.error({
+                        message: 'Número de recojo duplicado',
+                        description: 'El número de recojo ingresado ya existe. Por favor, utilice un número diferente.',
+                    });
+                } else {
+                    notification.error({
+                        message: `Error ${statusCode}`,
+                        description: errorMessage,
+                    });
+                }
             } else {
                 notification.error({
                     message: 'Error desconocido',
@@ -309,41 +333,53 @@ function CalculoFlete({ resetContent }) {
         children: content,
     }));
 
-    return (        
-        <div className="p-2 lg:px-8 lg:py-8 m-auto w-full rounded-md shadow-md space-y-4 space-x-2">    
-            <h1 className="text-2xl font-extrabold text-gray-800 mb-6 text-center">Cálculo de Fletes Exterior</h1>
-            <Collapse activeKey={activeKeys} onChange={handleCollapseChange} items={collapsePanels} />
-            {contextHolder} 
-            {statuses.data1 && statuses.data2 && statuses.data3 && (
-                <>
-                    <div className=' bg-gray-200 shadow-md rounded-md m-2 p-2 block space-y-2  md:space-y-0 md:flex  md:flex-row justify-center space-x-2'>
-                        <Dropdown.Button
-                            type="primary"
-                            icon={<DownOutlined />}
-                            loading={reportStatus}
-                            menu={{
-                                items,
-                                onClick: handleMenuClick,
-                            }}
-                            onClick={handleDropdownClick}
-                        >
-                            <FiEye /> Previsualización
-                        </Dropdown.Button>
-                        <Button color="gold" variant="solid" icon={<MdOutlineCleaningServices />}  onClick={limpiarData}>
-                            Limpiar
-                        </Button>
-                        <Button
-                            color="green"
-                            variant="solid"
-                            loading={isLoading}
-                            icon={isLoading ? <SyncOutlined spin /> : <FaRegSave />}
-                            onClick={handleGuardarData}>
-                            {isLoading ? 'Guardando...' : 'Finalizar'}
-                        </Button>
-                    </div>
-                </>
-            )}
-        </div>
+    return (
+        <>
+            <Modal
+                title="Datos encontrados"
+                visible={isModalVisible}
+                onOk={handleOk}
+                onCancel={handleCancelModal}
+                okText="Si, Continuar"
+                cancelText="No"
+            >
+                <p>Parece que estuviste trabajando aquí ¿quieres continuar con ese trabajo?</p>
+            </Modal>
+            <div className="p-2 lg:px-8 lg:py-8 m-auto w-full rounded-md shadow-md space-y-4 space-x-2">
+                <h1 className="text-2xl font-extrabold text-gray-800 mb-6 text-center">Cálculo de Fletes Exterior</h1>
+                <Collapse activeKey={activeKeys} onChange={handleCollapseChange} items={collapsePanels} />
+                {contextHolder}
+                {statuses.data1 && statuses.data2 && statuses.data3 && (
+                    <>
+                        <div className=' bg-gray-200 shadow-md rounded-md m-2 p-2 block space-y-2  md:space-y-0 md:flex  md:flex-row justify-center space-x-2'>
+                            <Dropdown.Button
+                                type="primary"
+                                icon={<DownOutlined />}
+                                loading={reportStatus}
+                                menu={{
+                                    items,
+                                    onClick: handleMenuClick,
+                                }}
+                                onClick={handleDropdownClick}
+                            >
+                                <FiEye /> Previsualización
+                            </Dropdown.Button>
+                            <Button color="gold" variant="solid" icon={<MdOutlineCleaningServices />} onClick={limpiarData}>
+                                Limpiar
+                            </Button>
+                            <Button
+                                color="green"
+                                variant="solid"
+                                loading={isLoading}
+                                icon={isLoading ? <SyncOutlined spin /> : <FaRegSave />}
+                                onClick={handleGuardarData}>
+                                {isLoading ? 'Guardando...' : 'Finalizar'}
+                            </Button>
+                        </div>
+                    </>
+                )}
+            </div>
+        </>
     );
 }
 
