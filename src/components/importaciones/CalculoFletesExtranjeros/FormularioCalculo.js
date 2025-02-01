@@ -249,6 +249,7 @@ function FormularioCalculo({ onDataValidate,initialData}) {
         <div className="w-full">
             {contextHolder}
             <Form
+                requiredMark={false}
                 form={form}
                 onFinish={onFinish}
                 layout="vertical"

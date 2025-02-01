@@ -1,64 +1,76 @@
-import React,{ useEffect} from 'react';
-import {Form, InputNumber,  Button,DatePicker  } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Form, InputNumber, Button, DatePicker, Checkbox } from 'antd';
 
 
 
-function FormularioExtra({ onDataValidate, precio ,cantidad}) {
-    
-    const [form] = Form.useForm(); 
-    
+function FormularioExtra({ onDataValidate, precio, cantidad }) {
+
+    const [form] = Form.useForm();
+    const [isChecked, setIsChecked] = useState(false);
+
+    const handleCheckboxChange = (e) => {
+        setIsChecked(e.target.checked);
+        if (isChecked) {
+            form.setFieldsValue({ gastoExtra1: 0.00 });
+        } else {
+            form.setFieldsValue({ gastoExtra1: 70.00 });
+        }
+    };
+
     ///useEffect para setear los valores iniciales del formulario
     useEffect(() => {
         if (precio !== undefined) {
-            form.setFieldsValue({ precioProd: precio });            
+            form.setFieldsValue({ precioProd: precio });
         }
-        if (cantidad !== undefined && cantidad>0) {
-            form.setFieldsValue({ mermaPermitida: cantidad*65 });
+        if (cantidad !== undefined && cantidad > 0) {
+            form.setFieldsValue({ mermaPermitida: cantidad * 65 });
             //form.submit();
-        }else{
-            form.setFieldsValue({ mermaPermitida: 65 });            
-        }   
-    }, [precio, cantidad,form]);
+        } else {
+            form.setFieldsValue({ mermaPermitida: 65 });
+        }
+    }, [precio, cantidad, form]);
 
     // Función para manejar el envío del formulario
     const onFinish = (values) => {
-        onDataValidate(values);        
+        onDataValidate(values);
     };
 
     return (
         <div className="w-full">
             <Form
+                requiredMark={false}
                 form={form}
                 onFinish={onFinish}
                 layout="vertical"
-                initialValues={{                   
+                initialValues={{
                     //dua: '',
-                    precioProd: precio,                   
-                    mermaPermitida:65,
+                    precioProd: precio,
+                    mermaPermitida: 65,
                     precioSacosRotos: 2,
-                    precioSacosMojados:3,
-                    precioSacosHumedos:3,
-                    gastosNacionalizacion:5,
-                    margenFinanciero:20,
-                    tipoCambioDescExt:2.247
+                    precioSacosMojados: 3,
+                    precioSacosHumedos: 3,
+                    gastosNacionalizacion: 5,
+                    margenFinanciero: 20,
+                    tipoCambioDescExt: 2.247
                 }}
             >
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-2">              
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-2">
 
-                    
+
                     <div className="">
                         <Form.Item
                             label="Merma permitida (kg)"
                             name="mermaPermitida"
+
                             rules={[{
                                 required: true,
                                 message: 'Por favor, ingresa el peso de merma permitida',
-                            },{
+                            }, {
                                 type: 'number',
                                 transform: (value) => value ? parseInt(value, 10) : 0,
                                 message: 'El valor de la merma permitida debe ser un número entero',
                             }]} >
-                            <InputNumber min={1} style={{ width: '100%' }}
+                            <InputNumber min={1.00} style={{ width: '100%' }}
                             />
                         </Form.Item>
                     </div>
@@ -70,7 +82,7 @@ function FormularioExtra({ onDataValidate, precio ,cantidad}) {
                             rules={[{
                                 required: true,
                                 message: 'Por favor, ingresa el precio del producto',
-                            },{
+                            }, {
                                 type: 'number',
                                 transform: (value) => value ? parseFloat(value) : 0,
                                 message: 'El Precio del producto debe ser un número decimal',
@@ -223,11 +235,25 @@ function FormularioExtra({ onDataValidate, precio ,cantidad}) {
                             <DatePicker format={"DD/MM/YYYY"} style={{ width: '100%' }} />
                         </Form.Item>
                     </div>
+                    <Form.Item name="gastoExtra1" label="Gasto Extra">
+                        <div className="flex items-center space-x-4">
+                            <Checkbox onChange={handleCheckboxChange} checked={isChecked}>
+                                
+                            </Checkbox>
+                            <InputNumber
+                                min={1.0}
+                                step={0.01}
+                                disabled={!isChecked}
+                                style={{ width: '100%' }}
+                                prefix="$"
+                            />
+                        </div>
+                    </Form.Item>
 
                     {/* Botón de enviar */}
                     <div className="md:mt-7 lg:mt-7">
                         <Button type="primary" htmlType="submit" className="w-full">
-                           Finalizar
+                            Finalizar
                         </Button>
                     </div>
                 </div>

@@ -15,7 +15,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     {
       key: "sub1", icon: <GoContainer />, label: "Importaciones", children: [
         { key: "3", label: <Link to={"/importaciones/calculo-fletes-ext"}>{"Fletes Extranjeros."}</Link>, },
-        { key: "4", label: <Link to={"/user/Alex"}>{"Otra Opcion"}</Link>, }
+        { key: "4", label: <Link to={"/importaciones/reporte-estiba"}>{"Reporte Estiba"}</Link>, }
       ]
     },   
     
