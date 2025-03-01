@@ -337,7 +337,7 @@ function CalculoFlete({ resetContent }) {
         <>
             <Modal
                 title="Datos encontrados"
-                visible={isModalVisible}
+                open={isModalVisible}
                 onOk={handleOk}
                 onCancel={handleCancelModal}
                 okText="Si, Continuar"

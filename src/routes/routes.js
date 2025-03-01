@@ -6,6 +6,7 @@ import AboutPage from '../pages/AbuoutPage';
 import NotFoundPage from '../pages/NotFoundPage';
 import CalculoFlete from '../components/importaciones/CalculoFletesExtranjeros/CalculoFlete';
 import ReporteEstiba from '../components/importaciones/PagoEstibas/FormReporteEstiba';
+import ListadoFletes from '../components/importaciones/ListaFletesExtranjeros/ListaFletexExtranjeros';
 
 const AppRoutes = ({ resetContent }) => (
   <Routes>
@@ -15,7 +16,8 @@ const AppRoutes = ({ resetContent }) => (
 
     {/* Rutas de importaciones */}    
     <Route path="/importaciones/calculo-fletes-ext" element={<CalculoFlete resetContent={resetContent}/>} />   
-    <Route path="/importaciones/reporte-estiba" element={<ReporteEstiba resetContent={resetContent}/>} />   
+    <Route path="/importaciones/reporte-estiba" element={<ReporteEstiba resetContent={resetContent}/>} />  
+    <Route path="/importaciones/lista-viajes" element={<ListadoFletes resetContent={resetContent}/>} /> 
     
   </Routes>
 );

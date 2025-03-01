@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const baseURL = 'http://localhost:8000/api';
+const baseURL = 'http://10.168.0.5:8000/api';
 
 const axiosInstance = axios.create({
   baseURL,
@@ -95,8 +95,6 @@ const refreshAuthToken = async () => {
     isRefreshing = false;
   }
 };
-
-
 
 
 

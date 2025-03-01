@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Form, InputNumber, Button, DatePicker, Checkbox } from 'antd';
-
+import { Form, InputNumber, Button, DatePicker } from 'antd';
+import DynamicFields from './OtrosGastosFields';
 
 
 function FormularioExtra({ onDataValidate, precio, cantidad }) {
@@ -32,6 +32,7 @@ function FormularioExtra({ onDataValidate, precio, cantidad }) {
 
     // Función para manejar el envío del formulario
     const onFinish = (values) => {
+        console.log("Valores: ", values);
         onDataValidate(values);
     };
 
@@ -235,27 +236,20 @@ function FormularioExtra({ onDataValidate, precio, cantidad }) {
                             <DatePicker format={"DD/MM/YYYY"} style={{ width: '100%' }} />
                         </Form.Item>
                     </div>
-                    <Form.Item name="gastoExtra1" label="Gasto Extra">
-                        <div className="flex items-center space-x-4">
-                            <Checkbox onChange={handleCheckboxChange} checked={isChecked}>
-                                
-                            </Checkbox>
-                            <InputNumber
-                                min={1.0}
-                                step={0.01}
-                                disabled={!isChecked}
-                                style={{ width: '100%' }}
-                                prefix="$"
-                            />
-                        </div>
-                    </Form.Item>
 
-                    {/* Botón de enviar */}
-                    <div className="md:mt-7 lg:mt-7">
-                        <Button type="primary" htmlType="submit" className="w-full">
-                            Finalizar
-                        </Button>
-                    </div>
+                </div>
+                    <hr></hr>   
+                    <h3 className='w-full p-2 font-semibold text-xl'> Otros gastos:</h3>    
+                <div className='w-full justify-center items-center'>
+                    <DynamicFields />
+                </div>
+
+
+                {/* Botón de enviar */}
+                <div className="md:mt-7 lg:mt-7">
+                    <Button type="primary" htmlType="submit" className="w-full">
+                        Finalizar
+                    </Button>
                 </div>
             </Form>
 

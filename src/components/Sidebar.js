@@ -14,8 +14,9 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     // { key: "2", icon: <DesktopOutlined />, label: "Option 2", to: "/option2" },
     {
       key: "sub1", icon: <GoContainer />, label: "Importaciones", children: [
-        { key: "3", label: <Link to={"/importaciones/calculo-fletes-ext"}>{"Fletes Extranjeros."}</Link>, },
-        { key: "4", label: <Link to={"/importaciones/reporte-estiba"}>{"Reporte Estiba"}</Link>, }
+        { key: "3", label: <Link to={"/importaciones/lista-viajes"}>{"Listado Fletes"}</Link>, },
+        { key: "4", label: <Link to={"/importaciones/calculo-fletes-ext"}>{"Fletes Extranjeros"}</Link>, },
+        { key: "5", label: <Link to={"/importaciones/reporte-estiba"}>{"Reporte Estiba"}</Link>, }
       ]
     },   
     

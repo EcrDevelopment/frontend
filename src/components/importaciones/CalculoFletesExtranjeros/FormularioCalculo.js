@@ -2,16 +2,12 @@ import React, { useState,useEffect } from 'react';
 import { Select, Modal, Form, Input, InputNumber, DatePicker, Button, AutoComplete, notification, Alert, message, Space } from 'antd';
 import axiosInstance from '../../../axiosConfig';
 import moment from 'moment';
-
+import 'moment/locale/es'; // Asegúrate de importar el idioma español si usas fechas en español
 import dayjs from 'dayjs';
-import customParseFormat from 'dayjs/plugin/customParseFormat';
-dayjs.extend(customParseFormat);
-// Formatos de fecha personalizados
-const dateFormatList = ['DD/MM/YYYY', 'DD/MM/YY', 'DD-MM-YYYY', 'DD-MM-YY'];
 
+moment.locale('es'); 
 // Componente para el formulario de cálculo de fletes
 const { Option } = Select;
-
 
 function FormularioCalculo({ onDataValidate,initialData}) {
     const [baseDatos, setBaseDatos] = useState('');
@@ -29,17 +25,22 @@ function FormularioCalculo({ onDataValidate,initialData}) {
     const [form] = Form.useForm();
     const [modalForm] = Form.useForm();
     const [messageApi, contextHolder] = message.useMessage();
-
     const [formState, setFormState] = useState(initialData || {});
 
+
+    
     useEffect(() => {
         if (initialData) {
-            // Convertir la fechaNumeracion a un objeto moment
-            if (initialData.fechaNumeracion) {
-                initialData.fechaNumeracion = moment(initialData.fechaNumeracion); // Convertir a 'moment'
-            }
-            setFormState(initialData);  // Cargar los datos iniciales
-            form.setFieldsValue(initialData);
+        // Crear una copia profunda de initialData para evitar mutaciones
+        const formattedData = JSON.parse(JSON.stringify(initialData))
+    
+        // Convertir la fecha a un objeto moment válido
+        if (formattedData.fechaNumeracion) {                  
+            formattedData.fechaNumeracion = dayjs(initialData.fechaNumeracion);
+        }
+
+        setFormState(formattedData);
+        form.setFieldsValue(formattedData); //                
             if (initialData.ordenRecojo?.length > 0) {
                 initialData.ordenRecojo.forEach((element, index) => {
                     if (index === 0) {
@@ -48,11 +49,33 @@ function FormularioCalculo({ onDataValidate,initialData}) {
                         setocSeleccionada2(element.oc); // Segundo elemento
                     }
                 });
-            }
-
-            
+            }            
         }
     }, [initialData, form]);
+    
+    /*
+    useEffect(() => {
+        if (initialData) {
+          // Crear una copia profunda de initialData para evitar mutaciones
+          const formattedData = JSON.parse(JSON.stringify(initialData))
+    
+          // Convertir la fecha a un objeto moment válido
+          if (formattedData.fechaNumeracion) {
+            formattedData.fechaNumeracion = moment(formattedData.fechaNumeracion)
+          }
+    
+          // Establecer los valores del formulario
+          form.setFieldsValue(formattedData)
+    
+          // Manejar las órdenes de recojo
+          if (formattedData.ordenRecojo?.length > 0) {
+            const [firstOC, secondOC] = formattedData.ordenRecojo
+            if (firstOC) setocSeleccionada1(firstOC.oc)
+            if (secondOC) setocSeleccionada2(secondOC.oc)
+          }
+        }
+      }, [initialData, form])
+      */
 
     // Función para manejar el cambio en el select de base de datos
     const handleBaseDatosChange = (value) => {
@@ -260,8 +283,7 @@ function FormularioCalculo({ onDataValidate,initialData}) {
                     ordenRecojo: [],
                     numRecojo: '1',
                     cartaPorte: '',
-                    numFactura: '',
-                    fechaNumeracion: '',
+                    numFactura: '',                    
                     transportista: '',
                     fletePactado: '',
                     presoNetoCrt: 0,
@@ -376,13 +398,12 @@ function FormularioCalculo({ onDataValidate,initialData}) {
                         <Form.Item
                             label="Fecha de Numeración"
                             name="fechaNumeracion"
-                            rules={[{
-                                required: true,
-                                message: 'Por favor, ingresa la fecha de numeración',
-                            }, {
-                                type: 'date',
-                                message: 'Por favor, ingresa una fecha válida',
-                            }]} >
+                            rules={[
+                                {
+                                    required: true,
+                                    message: 'Por favor, ingresa la fecha de numeración',
+                                }
+                            ]}>
                             <DatePicker format={"DD/MM/YYYY"} style={{ width: '100%' }} />
                         </Form.Item>
                     </div>
