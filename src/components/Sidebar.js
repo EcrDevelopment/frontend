@@ -16,7 +16,8 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       key: "sub1", icon: <GoContainer />, label: "Importaciones", children: [
         { key: "3", label: <Link to={"/importaciones/lista-viajes"}>{"Listado Fletes"}</Link>, },
         { key: "4", label: <Link to={"/importaciones/calculo-fletes-ext"}>{"Fletes Extranjeros"}</Link>, },
-        { key: "5", label: <Link to={"/importaciones/reporte-estiba"}>{"Reporte Estiba"}</Link>, }
+        { key: "5", label: <Link to={"/importaciones/reporte-estiba"}>{"Reporte Estiba"}</Link>, },
+        { key: "6", label: <Link to={"/importaciones/carga_docs_dua"}>{"Recepcion Docs."}</Link>, }
       ]
     },   
     

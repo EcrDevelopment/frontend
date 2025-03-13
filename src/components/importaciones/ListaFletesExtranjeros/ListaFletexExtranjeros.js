@@ -33,15 +33,17 @@ const handleMenuClick = (e, id) => {
 
 const handleRecuperarData = async (id) => {
     try {
-        const response = await axiosInstance.get('/importaciones/listar-data-despacho/', {
-            params: {
-                id: id,                
-            },
+        const response = await axiosInstance.get(`/importaciones/descargar_pdf/${id}/`).then((response) => {
+            const file = new Blob([response.data], { type: 'application/pdf' });
+            const fileURL = URL.createObjectURL(file);            
+            window.open(fileURL, '_blank');
+            message.success("Reporte generado correctamente.");
+            
         });        
-
-        console.log(response.data);
+        
     } catch (error) {
-        message.error('Error al buscar proveedor:', error);
+        message.error('Error al generar reporte');
+        console.log(error);
     }
 }
 
