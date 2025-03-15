@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Table, Dropdown, Space, Button, Tooltip, message } from "antd";
+import { Table, Dropdown, Space, Button, Tooltip, message, Modal } from "antd";
 import { DownOutlined } from '@ant-design/icons';
 import qs from "qs";
 import axiosInstance from "../../../axiosConfig";
@@ -14,7 +14,7 @@ const items = [
     },
     {
         key: '2',
-        label: 'Ver Reporte 2',
+        label: 'proximamente',
     },
 ];
 
@@ -37,8 +37,7 @@ const handleRecuperarData = async (id) => {
             const file = new Blob([response.data], { type: 'application/pdf' });
             const fileURL = URL.createObjectURL(file);            
             window.open(fileURL, '_blank');
-            message.success("Reporte generado correctamente.");
-            
+            message.success("Reporte generado correctamente.");            
         });        
         
     } catch (error) {
@@ -47,9 +46,29 @@ const handleRecuperarData = async (id) => {
     }
 }
 
-const handleGenerarReporte = (data) => {
-    message.success('opcion 1');
-}
+const confirmarEliminacion = (id) => {
+    Modal.confirm({
+        title: '¿Estás seguro de eliminar este despacho?',
+        content: 'Esta acción no se puede deshacer',
+        okText: 'Sí, eliminar',
+        okType: 'danger',
+        cancelText: 'Cancelar',
+        onOk: () => handleEliminarDespacho(id),
+    });
+};
+
+const handleEliminarDespacho = async (id) => {
+    try {
+        await axiosInstance.delete(`importaciones/despachos/${id}/eliminar/`)
+        .then((response) => {
+            message.success(response.data.message);  // Mensaje de éxito
+        });
+    } catch (error) {
+        message.error(error.response?.data?.error || 'Error al eliminar el despacho');
+        console.log(error);
+    }
+};
+
 
 const columns = [
     {
@@ -136,7 +155,7 @@ const columns = [
         key: 'operation',
         render: (item) => (
             <Space size="middle">
-                <Button color="red" variant="solid">Eliminar</Button>
+                <Button color="red" variant="solid"  onClick={() => confirmarEliminacion(item.id)} >Eliminar</Button>
                 <Dropdown menu={{ items, onClick: (e) => handleMenuClick(e, item.id) }}>
                     <Button color="cyan" variant="solid">
                         <Space>
